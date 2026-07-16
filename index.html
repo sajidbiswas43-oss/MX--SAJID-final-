@@ -6179,35 +6179,115 @@ App developed by SAJID
 
 https://remix-remix-remix-remix-remix-remix-mx-sajid-1539.ai.studio/`;
 
-            // 1. First, try the browser's native share feature directly
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: `${customer.name} - এর হিসাব`,
-                        text: shareText
-                    });
-                    return; // Successfully shared!
-                } catch (err) {
-                    if (err.name === 'AbortError') {
-                        return; // User cancelled, do nothing
+            // Show highly polished AppsGeyser-friendly Share Options Modal
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            if (!modal || !content) return;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex', 'pointer-events-auto');
+            
+            content.className = "w-full max-w-md bg-white dark:bg-slate-900 rounded-[32px] p-6 sm:p-8 animate-fade-in shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-none";
+            content.innerHTML = `
+                <div class="relative text-center pb-2">
+                    <!-- Close button -->
+                    <button onclick="closeModal()" class="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-9 h-9 bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-sm">
+                        <i data-lucide="x" class="w-4 h-4 text-gray-500 dark:text-gray-400"></i>
+                    </button>
+
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3 shadow-sm">
+                        <i data-lucide="share-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-base font-black text-gray-900 dark:text-white mb-1">লেনদেন রেকর্ড শেয়ার করুন</h3>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 font-bold mb-4">নিচের সহজ অপশনগুলো ব্যবহার করে কাস্টমারকে হিসাব পাঠান</p>
+
+                    <!-- Preview box -->
+                    <div class="bg-gray-50 dark:bg-slate-950/40 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 text-left text-[11px] font-bold text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto scrollbar-thin mb-5 select-all font-mono">
+${shareText}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="space-y-3">
+                        <!-- Copy Button -->
+                        <button id="modal-share-copy-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 px-4 rounded-xl font-black text-xs flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-md">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>রেকর্ড কপি করুন</span>
+                        </button>
+
+                        <!-- WhatsApp Button -->
+                        <button id="modal-share-wa-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-4 rounded-xl font-black text-xs flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-md">
+                            <i data-lucide="message-square" class="w-4 h-4"></i>
+                            <span>হোয়াটসঅ্যাপে পাঠান</span>
+                        </button>
+
+                        <!-- Generic System Share Button -->
+                        <button id="modal-share-native-btn" class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-200 py-3.5 px-4 rounded-xl font-black text-xs flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-sm">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            <span>মেসেঞ্জার/ইমো/অন্যান্য অ্যাপে শেয়ার</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            if (window.lucide) window.lucide.createIcons();
+
+            // Setup interactive listeners
+            const copyBtn = document.getElementById('modal-share-copy-btn');
+            const waBtn = document.getElementById('modal-share-wa-btn');
+            const nativeBtn = document.getElementById('modal-share-native-btn');
+
+            copyBtn.onclick = () => {
+                copyToClipboardNoAlert(shareText);
+                copyBtn.className = "w-full bg-emerald-500 text-white py-3.5 px-4 rounded-xl font-black text-xs flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-md";
+                copyBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>সফলভাবে কপি হয়েছে!</span>`;
+                if (window.lucide) window.lucide.createIcons();
+                
+                // Reset copy button styling after 2 seconds
+                setTimeout(() => {
+                    const currentBtn = document.getElementById('modal-share-copy-btn');
+                    if (currentBtn) {
+                        currentBtn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 px-4 rounded-xl font-black text-xs flex items-center justify-center space-x-2 active:scale-95 transition-all shadow-md";
+                        currentBtn.innerHTML = `<i data-lucide="copy" class="w-4 h-4"></i> <span>রেকর্ড কপি করুন</span>`;
+                        if (window.lucide) window.lucide.createIcons();
                     }
-                    console.error('Native sharing failed:', err);
+                }, 2000);
+            };
+
+            waBtn.onclick = () => {
+                const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                window.open(waUrl, '_blank');
+            };
+
+            nativeBtn.onclick = async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: `${customer.name} - এর হিসাব`,
+                            text: shareText
+                        });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error('Native sharing failed:', err);
+                            copyToClipboardNoAlert(shareText);
+                            showAlert('আপনার ডিভাইসে সরাসরি শেয়ার সাপোর্ট করছে না, হিসাবটি কপি করা হয়েছে!');
+                        }
+                    }
+                } else {
+                    copyToClipboardNoAlert(shareText);
+                    showAlert('আপনার ডিভাইসে সরাসরি শেয়ার সাপোর্ট করছে না, হিসাবটি কপি করা হয়েছে!');
                 }
-            }
+            };
+        }
 
-            // 2. If navigator.share is not supported or failed (like inside AppsGeyser WebView),
-            // trigger the Android SEND intent which opens the system app chooser instantly.
-            try {
-                const intentUrl = `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};end`;
-                window.location.href = intentUrl;
-                return;
-            } catch (intentErr) {
-                console.error('Android Intent fallback failed:', intentErr);
+        function copyToClipboardNoAlert(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(err => {
+                    console.error('Failed to copy:', err);
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
             }
-
-            // 3. Absolute fallback: Copy to clipboard and notify
-            copyToClipboard(shareText);
-            showAlert('আপনার ডিভাইসে সরাসরি শেয়ার সাপোর্ট করছে না, হিসাবটি কপি করা হয়েছে!');
         }
 
         function copyToClipboard(text) {
