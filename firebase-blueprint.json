@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "shopName": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "shopLogo": { "type": "string" },
+        "pinEnabled": { "type": "boolean" },
+        "pinCode": { "type": "string" }
+      },
+      "required": ["shopName"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "avatarUrl": { "type": "string" }
+      },
+      "required": ["name", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Due or Paid transaction",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["DUE", "PAID"] },
+        "note": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["customerId", "amount", "type", "date"]
+    },
+    "Profile": {
+      "title": "User Profile",
+      "description": "User's personal information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["name", "email", "uid"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/profile/info": {
+      "schema": "Profile",
+      "description": "User's profile information"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document"
+    },
+    "/users/{userId}/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "User's customers"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "User's transactions"
+    },
+    "/otps/{email}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "otp": { "type": "string" },
+          "expiry": { "type": "number" },
+          "used": { "type": "boolean" }
+        },
+        "required": ["otp", "expiry", "used"]
+      },
+      "description": "One-time passwords for password reset"
+    }
+  }
+}

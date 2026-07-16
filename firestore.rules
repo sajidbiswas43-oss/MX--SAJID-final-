@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      // Allow read for everyone to support phone -> email login mapping and lookup
+      allow read: if true;
+      allow write: if isOwner(userId);
+      
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    match /otps/{email} {
+      // Allow read and write for OTP generation and verification
+      allow read, write: if true;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
